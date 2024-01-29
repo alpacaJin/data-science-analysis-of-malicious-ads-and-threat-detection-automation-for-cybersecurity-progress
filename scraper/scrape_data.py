@@ -17,7 +17,6 @@ def scrape_data():
     # Proxy rotation (random)
     start0 = time.time()
     proxies = open("sup-file/proxies.txt", "r").read().strip().split("\n")
-    random_proxy = random.choice(proxies)
 
     # Read data from file
     try:
@@ -32,7 +31,7 @@ def scrape_data():
     # Write advertisement elements to csv file
     with open("scrape-file\scraped_google_urls.csv", "w", encoding='utf-8', newline='') as file:
         thewriter = writer(file)
-        header = ['URL', 'Company']
+        header = ['URL', 'Company', 'Title', 'Product_Description']
         thewriter.writerow(header)
 
         for keyword in listOfKeywords:
@@ -47,6 +46,9 @@ def scrape_data():
             adElements = []
             
             try:
+                # Rotate proxies
+                random_proxy = random.choice(proxies)
+
                 print("Proxy: ", random_proxy)                
                 for _ in range(numberOfTimes):
                     # Get requests from google search query
@@ -76,6 +78,11 @@ def scrape_data():
 
                             for container in topBotAds.findAll('div', class_='uEierd'):
                                 try:
+                                    try:
+                                        advertisementTitle = container.find('div', class_='CCgQ5 Va3FIb EE3Upf TElO2c OSrXXb').span.text
+                                    except:
+                                        advertisementTitle = 'N/A'
+
                                     url = container.find('div', class_='v5yQqb').find('span', class_='ob9lvb').text
                                     company = tldextract.extract(url).domain
 
@@ -95,8 +102,15 @@ def scrape_data():
                                     url = 'N/A'
                                     company = 'N/A'
 
+                                try:
+                                    productDesciption = container.find('div', class_='Va3FIb r025kc lVm3ye Hdw6tb').text
+                                except:
+                                    productDesciption = 'N/A'
+
                                 print(url)
                                 print(company)
+                                print(advertisementTitle)
+                                print(productDesciption)
                                 print()
                                 absolute_top += 1
                             

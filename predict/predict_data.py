@@ -135,7 +135,7 @@ def predict_data():
     scraped_urls_data['Having_ip_address'] = scraped_urls_data['URL'].apply(lambda i: having_ip_address(i))
 
     # Drop undesired features
-    X2 = scraped_urls_data.drop(['URL','Company', 'Domain'], axis=1)
+    X2 = scraped_urls_data.drop(['URL','Company', 'Title', 'Product_Description', 'Domain'], axis=1)
 
     # Create Test (validate) data on scraped data
     test_X2 = X2
