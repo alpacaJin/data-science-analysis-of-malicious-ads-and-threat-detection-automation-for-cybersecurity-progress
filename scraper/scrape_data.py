@@ -25,7 +25,7 @@ def scrape_data():
             listOfKeywords = [x.strip() for x in keywords.split(',') if x.strip()]
     except FileNotFoundError:
         listOfKeywords = []
-    numberOfTimes = 10
+    numberOfTimes = 1
     resultDict = {}
 
     # Write advertisement elements to csv file
@@ -114,7 +114,7 @@ def scrape_data():
                                 print()
                                 absolute_top += 1
                             
-                                adElements = [url, company]
+                                adElements = [url, company, advertisementTitle, productDesciption]
                                 thewriter.writerow(adElements)
 
                             # Write advertisement source code to html file

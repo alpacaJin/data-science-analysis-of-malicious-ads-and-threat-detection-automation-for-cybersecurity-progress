@@ -9,15 +9,22 @@
     <meta name="author" content="Sandra Nguyen">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Bootstrap CSS Stylesheet -->
+    <!-- Bootstrap CSS, JS, Popper Stylesheet -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" 
     integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Afacad" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=WindSong" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi+Ink" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Castoro+Titling" rel="stylesheet">
 
     <!-- Google Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
@@ -25,18 +32,30 @@
     <!-- Font Awesoome Icons -->
     <script src="https://kit.fontawesome.com/b4d50f2604.js" crossorigin="anonymous"></script>
 
+    <!-- D3.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+
     <!-- Favicon -->
 
     <title>Careless</title>
 
     <!-- Background -->
     <style>
-        html,
         body {
             height: 100%;
             margin: 0;
             padding: 0;
-            background-color: black;
+            background-image: url("{{ url_for('static', filename='clownfish3.jpg') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+    </style>
+
+    <!-- Custom colors -->
+    <style>
+        /* Purple */
+        .purple {
+            color: #c500ff;
         }
     </style>
 
@@ -61,17 +80,54 @@
         }
     </style>
 
-    <!-- Sub Header -->
+    <!-- Home -->
     <style>
+        /* Empty space */
+        @media (min-width: 992px) {
+            .home {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 65vh;
+                margin: 0;
+            }
+        }
+
+        @media (max-width: 991px) {
+            .home {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 55vh;
+                margin: 0;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .home {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 50vh;
+                margin: 0;
+            }
+        }
+
         @media (min-width: 768px) {
             .responsive-sub-row {
-                justify-content: left;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
             }
         }
 
         @media (max-width: 767px) {
             .responsive-sub-row {
-                justify-content: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
             }
         }
 
@@ -91,77 +147,219 @@
         /* Name */
         @media (min-width: 576px) {
             .responsive-name {
-                font-size: 3rem;
+                font-size: 4rem;
             }
         }
 
         @media (max-width: 575px) {
             .responsive-name {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
         }
+    </style>
+
+    <!-- Form -->
+    <style>
+        @media (min-width: 576px) {
+            .form-wrapper {
+                width: 100%;
+                padding-top: 5%;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .form-wrapper {
+                width: 100%;
+                padding-top: 5%;
+            }
+        }
+
+        @media (min-width: 576px) {
+            .form-wrapper .content {
+                font-size: 15px;
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .form-wrapper .content {
+                font-size: 15px;
+                margin: 10px 0;
+            }
+        }
+
+        @media (min-width: 576px) {
+            .form-wrapper .content ul {
+                display: flex;
+                flex-wrap: wrap;
+                padding: 7px;
+                margin: 12px 0;
+                border-radius: 5px;
+                border: 1px solid #a6a6a6;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .form-wrapper .content ul {
+                display: flex;
+                flex-wrap: wrap;
+                padding: 7px;
+                margin: 12px 0;
+                border-radius: 5px;
+                border: 1px solid #a6a6a6;
+            }
+        }
+
+        .form-wrapper .content ul li {
+            color: #333;
+            margin: 4px 3px;
+            list-style: none;
+            border-radius: 5px;
+            background: #F2F2F2;
+            padding: 5px 8px 5px 10px;
+            border: 1px solid #e3e1e1;
+        }
+
+        .form-wrapper .content ul li i {
+            height: 20px;
+            width: 20px;
+            color: #808080;
+            margin-left: 2px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 50%;
+            background: #dfdfdf;
+            justify-content: center;
+        }
+
+        .form-wrapper .content ul input {
+            flex: 1;
+            padding: 5px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: transparent;
+
+            color: white;
+            caret-color: white;
+        }
+
+        .form-wrapper .details {
+            justify-content: space-between;
+        }
+
+        .form-wrapper .details button {
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 9px 15px;
+            border-radius: 5px;
+            background: #9600ff;
+            transition: background 0.3s ease;
+        }
+
+        .form-wrapper .details button:hover {
+            background: #c500ff;
+        }
+    </style>
+
+    <!-- Settings -->
+    <style>
+
     </style>
 </head>
 
 <body>
     <!-- Header -->
     <div id="header" class="container-fluid px-3 mx-0 pt-3" style="z-index: 1;">
-        <div class="row responsive-sub justify-content-evenly" style="font-family: 'Afacad'; color: white;">
+        <div class="row responsive-sub justify-content-evenly" style="font-family: 'Reem Kufi Ink'; color: white;">
             <div class="col-sm-1 col-md-1 col-lg-1 pt-2 text-center text-md-start">CARELESS</div>
 
-            <div class="col-sm-8 col-md-8 col-lg-7 pt-2">
+            <div class="col-sm-8 col-md-8 col-lg-7 ">
                 <div class="row justify-content-center">
                     <div class="col-sm-2 col-md-2 col-lg-3 pt-2 text-center">
-                        <a style="font-family: 'Afacad'; color: white;">Attack Surface</a>
+                        <a style="font-family: 'Reem Kufi Ink'; color: white;">Attack Surface</a>
                         <span class="material-symbols-outlined d-inline-block align-middle">
                             chevron_right
                         </span>
                     </div>
         
                     <div class="col-sm-2 col-md-2 col-lg-3 pt-2 text-center">
-                        <a href="#keyword-analysis" style="font-family: 'Afacad'; color: white;">Keyword Analysis</a>
+                        <a href="#keyword-analysis" style="font-family: 'Reem Kufi Ink'; color: white;">Keyword Analysis</a>
                     </div>
         
                     <div class="col-sm-2 col-md-2 col-lg-3 pt-2 text-center">
-                        <a href="#fraud-detection" style="font-family: 'Afacad'; color: white;">Threat Detection</a>
+                        <a href="#fraud-detection" style="font-family: 'Reem Kufi Ink'; color: white;">Threat Detection</a>
                     </div>
                 </div>
             </div>
 
-            <div class="col-sm-1 col-md-1 col-lg-3 pt-2 text-center text-lg-end">
-                <a href="#report" style="font-family: 'Afacad'; color: white;">Report</a>
+            <div class="col-sm-1 col-md-1 col-lg-3 pt-2 text-center text-md-end text-lg-end">
+                <a href="#report" style="font-family: 'Reem Kufi Ink'; color: white;">Report</a>
             </div>
         </div>
     </div>
 
     <!-- Form -->
     <div class="container-fluid px-3 mx-0 pt-5">
-        <div class="row responsive-sub-row justify-content-evenly" style="padding-left: 18%; padding-right: 10%;">
+        <div class="row responsive-sub-row home justify-content-evenly text-start" style="padding-left: 18%; padding-right: 50%; padding-top: 15vh;">
             <!-- Sub Header -->
-            <div class="responsive-text col-md-5 col-lg-5 text-start text-lg-start" style="font-family: 'Afacad'; color: white; padding-top: 20%;">
-                <p class="resposnvie-sub ">Let's explore top competitors for</p>
-                <div class="responsive-name" style="font-family: 'WindSong'; font-weight: bold">
+            <div class="responsive-text col-md-5 col-lg-5 purple text-start text-lg-start" style="font-family: 'Reem Kufi Ink'; padding-top: 20%;">
+                <p class="resposnvie-sub ">Explore top competitors for</p>
+                <div class="responsive-name" style="font-family: 'Castoro Titling'; color: white; font-weight: bold">
                     <p>Cybersecurity</p>
                 </div>
             </div>
 
-            <!-- Form -->
-            <div class="col-md-6 col-lg-6" style="font-family: 'Afacad'; color: white; font-size: 1.5rem; padding-top: 20%;">
-                <!-- Webscrape -->
-                <form action="{{url_for('scrape_data.webscrape')}}" method="post">
-                    <div class="form-group">
-                        <label for="keyword-input">Keywords</label>
-                        <input type="text" class="form-control" name="keyword" id="keyword" aria-describedby="emailHelp" placeholder="nft, cryptocurrency, malware">
-                        <small id="emailHelp" class="form-text text-muted">Scrape many keywords at one time!</small>
+            <div style="padding-left: 30%;">
+                <div class="wrapper form-wrapper" style="font-family: 'Reem Kufi Ink'; color: white;">
+                    <div class="responsive-sub">
+                        <!-- <img src="tag.svg"> -->
+                        Search Keywords
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary">Let's scrape!</button>
-                </form>
 
-                <!-- Predict -->
-                <form action="{{url_for('predict_data.predict')}}" method="post">
-                    <button type="submit" class="btn btn-primary">Let's predict!</button>
-                </form>
+                    <div style="color: #a6a6a6;">
+                        <form action="{{url_for('scrape_data.webscrape')}}" method="post">
+                            <div class="form-group content">
+                                Press enter after each keyword
+                                <ul><input type="text" spellcheck="false"></ul>
+                            </div>
+                        
+                            <div class="details">
+                                <p><span>10</span> keywords remaining</p>
+
+                                <!-- Settings -->
+                                <div row>
+                                    <div class="col-3">
+                                        <button type="button">Remove All Keywords</button>
+                                    </div>
+
+                                    <div class="col-3">
+                                        <div class="dropdown" style="padding-top: 10px;">
+                                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+                                              User Agents
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-dark">
+                                              <li><a class="dropdown-item" href="#">Chrome Windows</a></li>
+                                              <li><a class="dropdown-item" href="#">Chrome macOS</a></li>
+                                              <li><a class="dropdown-item" href="#">Chrome Linux</a></li>
+                                              <li><a class="dropdown-item" href="#">Chrome Android</a></li>
+                                              <li><a class="dropdown-item" href="#">Chrome iOS</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Form -->
+                            <div class="details" style="padding-top: 10px;">
+                                <button type="submit" class="btn btn-primary">Let's scrape!</button>
+                            </div>
+                        </form>            
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -179,28 +377,70 @@
         </div>
     </div>
 
+    <!-- JS -->
+    <!-- Form -->
+    <script>
+        const ul = document.querySelector("ul"),
+        input = document.querySelector("input"),
+        tagNumb = document.querySelector(".details span");
+        
+        let maxTags = 10,
+        tags = ["nft", "cryptocurrency", "malware"];
+        
+        countTags();
+        createTag();
 
+        function countTags(){
+            input.focus();
+            tagNumb.innerText = maxTags - tags.length;
+        }
 
-    <!-- <div class="login">
-            
-        <form action="{{url_for('scrape_data.webscrape')}}" method="post">
-            <input type="text" name="keyword" placeholder="nft, cryptocurrency, malware" required="required" /><br>
+        function createTag(){
+            ul.querySelectorAll("li").forEach(li => li.remove());
+            tags.slice().reverse().forEach(tag =>{
+                let liTag = `<li>${tag} <i class="uit uit-multiply" onclick="remove(this, '${tag}')"></i></li>`;
+                ul.insertAdjacentHTML("afterbegin", liTag);
+            });
+            countTags();
+        }
 
-            <button type="submit" class="btn btn-primary btn-block btn-large">Let's scrape!</button></p>
-        </form>
+        function remove(element, tag){
+            let index  = tags.indexOf(tag);
+            tags = [...tags.slice(0, index), ...tags.slice(index + 1)];
+            element.parentElement.remove();
+            countTags();
+        }
 
-        <h4 style="color: black;">
-            {{ scraped_data }}
-        </h4>
+        function addTag(e) {
+            if (e.key === "Tab") {
+                e.preventDefault(); // prevent form submit when enter pressed
+                let tag = e.target.value.trim();
+                if (tag.length > 0 && !tags.includes(tag)) {
+                    if (tags.length < 10) {
+                        tags.push(tag);
+                        createTag();
+                    }
+                }
+                e.target.value = "";
+            }
+            else if (e.key === "Enter") {
+                e.preventDefault(); // prevent form submit when enter pressed
+            }
+        }
 
-        <form action="{{url_for('predict_data.predict')}}" method="post">
-            <button type="submit" class="btn btn-primary btn-block btn-large">Let's predict validity!</button></p>
-        </form>
+        input.addEventListener("keydown", addTag); // keyup to keydown
+        
+        const removeBtn = document.querySelector(".details button");
+        removeBtn.addEventListener("click", (event) =>{
+            if (event.target.type === "button") {
+                event.preventDefault();
+            }
 
-        <h4 style="color: black;">
-            {{ predict_data }}
-        </h4>
-    </div> -->
+            tags.length = 0;
+            ul.querySelectorAll("li").forEach(li => li.remove());
+            countTags();
+        });
+    </script>
 </body>
 
 </html>
