@@ -18,7 +18,6 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,6 +47,12 @@
             background-image: url("{{ url_for('static', filename='clownfish3.jpg') }}");
             background-size: cover;
             background-repeat: no-repeat;
+        }
+
+        a {
+            text-decoration: none;
+            scroll-behavior: smooth;
+            cursor: pointer;
         }
     </style>
 
@@ -267,7 +272,28 @@
 
     <!-- Settings -->
     <style>
+        .form-range::-webkit-slider-thumb {
+            background: #9600ff;
+        }
 
+        .form-range::-moz-range-thumb {
+            background: #9600ff;
+        }
+
+        .form-range::-ms-thumb {
+            background: #9600ff;
+        }
+
+        .range-labels div {
+            text-align: center;
+            /* Adjust the values as necessary to better align with the ticks */
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px; /* Adjust based on slider thumb size to align labels */
+        }
     </style>
 </head>
 
@@ -323,31 +349,72 @@
                     <div style="color: #a6a6a6;">
                         <form action="{{url_for('scrape_data.webscrape')}}" method="post">
                             <div class="form-group content">
-                                Press enter after each keyword
+                                Press tab after each keyword
                                 <ul><input type="text" spellcheck="false"></ul>
                             </div>
                         
                             <div class="details">
                                 <p><span>10</span> keywords remaining</p>
 
-                                <!-- Settings -->
-                                <div row>
-                                    <div class="col-3">
-                                        <button type="button">Remove All Keywords</button>
-                                    </div>
+                                <!-- Collapse Settings -->
+                                <p class="d-inline-flex gap-1">
+                                    <a data-bs-toggle="collapse" data-bs-target="#settings-collapse" aria-expanded="false" aria-controls="collapseExample" style="color: white">
+                                        <span class="material-symbols-outlined d-inline-block align-top" style="font-size: 1.5rem;">
+                                            chevron_right
+                                        </span>
+                                        Additional Settings
+                                    </a>
+                                </p>
+                                
+                                <div class="collapse" id="settings-collapse">
+                                    <div class="row">
+                                        <!-- Remove All -->
+                                        <div class="col-sm-12 col-md-12 col-lg-4" style="padding-top: 3%;">
+                                            <button type="button">Remove All Keywords</button>
+                                        </div>
 
-                                    <div class="col-3">
-                                        <div class="dropdown" style="padding-top: 10px;">
-                                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
-                                              User Agents
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-dark">
-                                              <li><a class="dropdown-item" href="#">Chrome Windows</a></li>
-                                              <li><a class="dropdown-item" href="#">Chrome macOS</a></li>
-                                              <li><a class="dropdown-item" href="#">Chrome Linux</a></li>
-                                              <li><a class="dropdown-item" href="#">Chrome Android</a></li>
-                                              <li><a class="dropdown-item" href="#">Chrome iOS</a></li>
-                                            </ul>
+                                        <!-- User Agents -->
+                                        <div class="col-sm-12 col-md-12 col-lg-4" style="padding-top: 3%;">
+                                            <div class="dropdown-center dropend">
+                                                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+                                                  User Agents
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                  <li><a class="dropdown-item" href="#">Chrome Windows</a></li>
+                                                  <li><a class="dropdown-item" href="#">Chrome macOS</a></li>
+                                                  <li><a class="dropdown-item" href="#">Chrome Linux</a></li>
+                                                  <li><a class="dropdown-item" href="#">Chrome Android</a></li>
+                                                  <li><a class="dropdown-item" href="#">Chrome iOS</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <!-- Iterations -->
+                                        <div class="col-sm-12 col-md-12 col-lg-6" style="padding-top: 3%;">
+                                            <label for="customRange3" class="form-label">Scrape Iterations
+                                                <a class="btn" data-bs-toggle="popover" data-bs-content="Control how many times the scraper will revisit the search engine. Find a balance between thorough seawrch results and increased runtime." data-bs-placement="right" tabindex="0" data-bs-trigger="hover">
+                                                    <span class="material-symbols-outlined d-inline-block align-top" style="font-size: 1.2rem; color: #808080;">
+                                                        help
+                                                    </span>
+                                                </a>
+                                            </label>
+                                            <input type="range" class="form-range" min="0" max="9" step="1" id="customRange3">
+                                            <!-- <div class="range-labels">
+                                                <div class="range-labels">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div>1</div>
+                                                        <div>2</div>
+                                                        <div>3</div>
+                                                        <div>4</div>
+                                                        <div>5</div>
+                                                        <div>6</div>
+                                                        <div>7</div>
+                                                        <div>8</div>
+                                                        <div>9</div>
+                                                        <div>10</div>
+                                                    </div>
+                                                </div>
+                                            </div> -->
                                         </div>
                                     </div>
                                 </div>
@@ -440,6 +507,12 @@
             ul.querySelectorAll("li").forEach(li => li.remove());
             countTags();
         });
+    </script>
+
+    <!-- Popover -->
+    <script>
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
     </script>
 </body>
 
