@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from csv import writer
 # Globe
 import geopandas as gpd
+from shapely.geometry import Point
 
 
 ## BeautifulSoup web scraper
@@ -140,11 +141,7 @@ def scrape_data(keywords, headers, iteration):
 def load_globe():
     world_polygon = gpd.read_file("sup-file/ne_110m_admin_0_countries.geojson")
 
-    # Extract data
-    dat = world_polygon
-    # .. Add URL locations
-
-    world_polygon.to_file("static/country_updated.geojson", driver='GeoJSON')
+    world_polygon.to_file("static/countries_updated.geojson", driver='GeoJSON')
 
 
 ## Flask
