@@ -32,7 +32,7 @@
     <script src="https://kit.fontawesome.com/b4d50f2604.js" crossorigin="anonymous"></script>
 
     <!-- D3.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
 
     <!-- Favicon -->
 
@@ -41,12 +41,14 @@
     <!-- Background -->
     <style>
         body {
-            height: 100%;
+            /* height: 100%; */
             margin: 0;
             padding: 0;
             background-image: url("{{ url_for('static', filename='clownfish3.jpg') }}");
             background-size: cover;
             background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
         }
 
         a {
@@ -83,6 +85,29 @@
                 font-size: 1rem;
             }
         }
+
+        .nav-link {
+            position: relative;
+            display: inline-block;
+        }
+
+        .nav-link::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 4px;
+            background: #9600ff;
+            border-radius: 8px;
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            opacity: 0;
+            transition: opacity .5s ease 0s;
+        }
+
+        .nav-link.active-link::after {
+            opacity: 1;
+        }
     </style>
 
     <!-- Home -->
@@ -93,7 +118,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                min-height: 65vh;
+                min-height: 50vh;
                 margin: 0;
             }
         }
@@ -140,12 +165,14 @@
         @media (min-width: 576px) {
             .responsive-text {
                 font-size: 1.3rem;
+                position: relative;
             }
         }
 
         @media (max-width: 575px) {
             .responsive-text {
                 font-size: 1rem;
+                position: relative;
             }
         }
 
@@ -160,6 +187,11 @@
             .responsive-name {
                 font-size: 2.5rem;
             }
+        }
+
+        .globe-container svg {
+            /* Scale and move the globe */
+            transform: scale(1.1) translate(10%, -30%);
         }
     </style>
 
@@ -284,15 +316,17 @@
             background: #9600ff;
         }
 
-        .range-labels div {
-            text-align: center;
-            /* Adjust the values as necessary to better align with the ticks */
-        }
-
-        .range-labels {
+        .range-steps {
             display: flex;
             justify-content: space-between;
-            padding: 0 10px; /* Adjust based on slider thumb size to align labels */
+            padding: 0 1px;
+        }
+
+        .range-steps span {
+            display: block;
+            text-align: center;
+            font-size: 12px;
+            padding-bottom: 3%;
         }
     </style>
 </head>
@@ -306,18 +340,19 @@
             <div class="col-sm-8 col-md-8 col-lg-7 ">
                 <div class="row justify-content-center">
                     <div class="col-sm-2 col-md-2 col-lg-3 pt-2 text-center">
-                        <a style="font-family: 'Reem Kufi Ink'; color: white;">Attack Surface</a>
-                        <span class="material-symbols-outlined d-inline-block align-middle">
-                            chevron_right
-                        </span>
+                        <p style="font-family: 'Reem Kufi Ink'; color: white;">Attack Surface
+                            <span class="material-symbols-outlined d-inline-block align-middle">
+                                chevron_right
+                            </span>
+                        </p>
                     </div>
         
                     <div class="col-sm-2 col-md-2 col-lg-3 pt-2 text-center">
-                        <a href="#keyword-analysis" style="font-family: 'Reem Kufi Ink'; color: white;">Keyword Analysis</a>
+                        <a id="navkeywordanalysis" class="nav-link" href="#keyword-analysis" style="font-family: 'Reem Kufi Ink'; color: white;">Keyword Analysis</a>
                     </div>
         
                     <div class="col-sm-2 col-md-2 col-lg-3 pt-2 text-center">
-                        <a href="#fraud-detection" style="font-family: 'Reem Kufi Ink'; color: white;">Threat Detection</a>
+                        <a id="navfrauddetection" class="nav-link" href="#fraud-detection" style="font-family: 'Reem Kufi Ink'; color: white;">Threat Detection</a>
                     </div>
                 </div>
             </div>
@@ -329,20 +364,24 @@
     </div>
 
     <!-- Form -->
-    <div class="container-fluid px-3 mx-0 pt-5">
-        <div class="row responsive-sub-row home justify-content-evenly text-start" style="padding-left: 18%; padding-right: 50%; padding-top: 15vh;">
+    <div class="container-fluid position-relative px-3 mx-0 pt-5">
+        <div class="row justify-content-center text-start" style="padding-left: 18%;">
             <!-- Sub Header -->
-            <div class="responsive-text col-md-5 col-lg-5 purple text-start text-lg-start" style="font-family: 'Reem Kufi Ink'; padding-top: 20%;">
+            <div class="responsive-text col-md-5 col-lg-10 purple text-start text-lg-start" style="font-family: 'Reem Kufi Ink'; padding-top: 15%; z-index: 2;">
                 <p class="resposnvie-sub ">Explore top competitors for</p>
                 <div class="responsive-name" style="font-family: 'Castoro Titling'; color: white; font-weight: bold">
                     <p>Cybersecurity</p>
+                </div>
+
+                <!-- D3.js Globe -->
+                <div class="globe-container" style="z-index: 1;">
+                    <svg width="80%" height="80%" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet" id="globe"></svg>
                 </div>
             </div>
 
             <div style="padding-left: 30%;">
                 <div class="wrapper form-wrapper" style="font-family: 'Reem Kufi Ink'; color: white;">
                     <div class="responsive-sub">
-                        <!-- <img src="tag.svg"> -->
                         Search Keywords
                     </div>
 
@@ -350,7 +389,8 @@
                         <form action="{{url_for('scrape_data.webscrape')}}" method="post">
                             <div class="form-group content">
                                 Press tab after each keyword
-                                <ul><input type="text" spellcheck="false"></ul>
+                                <ul><input id="hiddenKeywords" name="keywords" type="text" spellcheck="false"></ul>
+                                <input type="hidden" name="serialized_keywords" id="serializedKeywords">
                             </div>
                         
                             <div class="details">
@@ -379,42 +419,39 @@
                                                 <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
                                                   User Agents
                                                 </button>
-                                                <ul class="dropdown-menu">
-                                                  <li><a class="dropdown-item" href="#">Chrome Windows</a></li>
-                                                  <li><a class="dropdown-item" href="#">Chrome macOS</a></li>
-                                                  <li><a class="dropdown-item" href="#">Chrome Linux</a></li>
-                                                  <li><a class="dropdown-item" href="#">Chrome Android</a></li>
-                                                  <li><a class="dropdown-item" href="#">Chrome iOS</a></li>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                  <li><a class="dropdown-item" data-value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3538.102 Safari/537.36">Chrome Windows</a></li>
+                                                  <li><a class="dropdown-item" data-value="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36">Chrome macOS</a></li>
+                                                  <li><a class="dropdown-item" data-value="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36">Chrome Linux</a></li>
+                                                  <li><a class="dropdown-item" data-value="Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.134 Mobile Safari/537.36">Chrome Android</a></li>
+                                                  <li><a class="dropdown-item" data-value="Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/119.0.6045.109 Mobile/15E148 Safari/604.1">Chrome iOS</a></li>
                                                 </ul>
                                             </div>
                                         </div>
+                                        <input type="hidden" name="user_agent" id="userAgentValue">
 
                                         <!-- Iterations -->
-                                        <div class="col-sm-12 col-md-12 col-lg-6" style="padding-top: 3%;">
+                                        <div class="col-sm-12 col-md-12 col-lg-7" style="padding-top: 3%;">
                                             <label for="customRange3" class="form-label">Scrape Iterations
-                                                <a class="btn" data-bs-toggle="popover" data-bs-content="Control how many times the scraper will revisit the search engine. Find a balance between thorough seawrch results and increased runtime." data-bs-placement="right" tabindex="0" data-bs-trigger="hover">
+                                                <a class="btn" data-bs-toggle="popover" data-bs-content="Control how many times the scraper will revisit the search engine. Find a balance between thorough search results and increased runtime." data-bs-placement="right" tabindex="0" data-bs-trigger="hover">
                                                     <span class="material-symbols-outlined d-inline-block align-top" style="font-size: 1.2rem; color: #808080;">
                                                         help
                                                     </span>
                                                 </a>
                                             </label>
-                                            <input type="range" class="form-range" min="0" max="9" step="1" id="customRange3">
-                                            <!-- <div class="range-labels">
-                                                <div class="range-labels">
-                                                    <div class="d-flex justify-content-between">
-                                                        <div>1</div>
-                                                        <div>2</div>
-                                                        <div>3</div>
-                                                        <div>4</div>
-                                                        <div>5</div>
-                                                        <div>6</div>
-                                                        <div>7</div>
-                                                        <div>8</div>
-                                                        <div>9</div>
-                                                        <div>10</div>
-                                                    </div>
-                                                </div>
-                                            </div> -->
+                                            <input id="customRange3" type="range" class="form-range" name="iteration" min="1" max="10" step="1" value="5">
+                                            <div class="range-steps d-flex justify-content-between">
+                                                <span>1</span>
+                                                <span>2</span>
+                                                <span>3</span>
+                                                <span>4</span>
+                                                <span>5</span>
+                                                <span>6</span>
+                                                <span>7</span>
+                                                <span>8</span>
+                                                <span>9</span>
+                                                <span>10</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -445,6 +482,25 @@
     </div>
 
     <!-- JS -->
+    <!-- Header -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentFragment = window.location.hash; // Get the current URL fragment
+        
+            // Remove the active class from all nav items if needed
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active-link');
+            });
+        
+            // Add the active class to the current nav item based on the fragment
+            if (currentFragment === '#keyword-analysis') {
+                document.getElementById('navkeywordanalysis').classList.add('active-link');
+            } else if (currentFragment === '#fraud-detection') {
+                document.getElementById('navfrauddetection').classList.add('active-link');
+            }
+        });
+    </script>    
+
     <!-- Form -->
     <script>
         const ul = document.querySelector("ul"),
@@ -462,6 +518,11 @@
             tagNumb.innerText = maxTags - tags.length;
         }
 
+        // Serialize tags into comma-separated
+        function updateHiddenInput() {
+            document.getElementById('serializedKeywords').value = tags.join(',');
+        }
+
         function createTag(){
             ul.querySelectorAll("li").forEach(li => li.remove());
             tags.slice().reverse().forEach(tag =>{
@@ -469,6 +530,7 @@
                 ul.insertAdjacentHTML("afterbegin", liTag);
             });
             countTags();
+            updateHiddenInput();
         }
 
         function remove(element, tag){
@@ -476,6 +538,7 @@
             tags = [...tags.slice(0, index), ...tags.slice(index + 1)];
             element.parentElement.remove();
             countTags();
+            updateHiddenInput();
         }
 
         function addTag(e) {
@@ -506,6 +569,23 @@
             tags.length = 0;
             ul.querySelectorAll("li").forEach(li => li.remove());
             countTags();
+            updateHiddenInput();
+        });
+
+        /* Capture User Agent */
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default User Agent value
+            var defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3538.102 Safari/537.36";
+            document.getElementById('userAgentValue').value = defaultUserAgent;
+
+            // Update hidden input on dropdown item click
+            var dropdownItems = document.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    var userAgentString = this.getAttribute('data-value');
+                    document.getElementById('userAgentValue').value = userAgentString;
+                });
+            });
         });
     </script>
 
@@ -513,6 +593,87 @@
     <script>
         const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
         const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+    </script>
+
+    <!-- Globe -->
+    <script>
+        const width = 960, height = 500;
+        const svg = d3.select("#globe");
+        const projection = d3.geoOrthographic()
+            .scale(250)
+            .translate([width / 2, height / 2])
+            .clipAngle(90);
+        const path = d3.geoPath().projection(projection);
+        const sensitivity = 75;
+        const graticule = d3.geoGraticule();
+
+        svg.append("path")
+            .datum({ type: "Sphere" })
+            .attr("class", "sphere")
+            .attr("d", path)
+            .attr("fill", "#ADD8E6"); // Light blue fill, you can change the color
+
+        svg.append("path")
+            .datum(graticule())
+            .attr("class", "graticule")
+            .attr("d", path)
+            .attr("fill", "none")
+            .attr("stroke", "#ccc")
+            .attr("stroke-width", 0.5);
+
+        // Load and display the GeoJSON
+        d3.json("static/country_updated.geojson").then(geojsonData => {
+            svg.selectAll(".feature")
+                .data(geojsonData.features)
+                .enter().append("path")
+                .attr("class", "feature")
+                .attr("d", path)
+                .attr("fill", "#ccc") // Fill color for the countries
+                .attr("stroke", "#fff") // Stroke color for the countries
+                .attr("stroke-width", 0.5);
+
+            // Optional: Draw interiors/borders if available in your GeoJSON
+            // This part depends on your GeoJSON structure
+            // If your GeoJSON includes borders or interiors, you can render them similarly by appending another path
+        });
+
+        // Add automatic spinning
+        function spin() {
+            const rotate = projection.rotate();
+            projection.rotate([rotate[0] + 0.5, rotate[1]]);
+            svg.selectAll("path").attr("d", path);
+        }
+        let spinning = setInterval(spin, 50);
+
+        // Add dragging
+        let drag = d3.drag()
+            .on('start', dragstarted)
+            .on('drag', dragged)
+            .on('end', dragended);
+
+        svg.call(drag);
+
+        let rotating = true;
+
+        function dragstarted(event) {
+            d3.select(this).raise();
+            clearInterval(spinning);
+            rotating = false;
+        }
+
+        function dragged(event) {
+            const r = projection.rotate();
+            const k = sensitivity / projection.scale();
+            projection.rotate([r[0] + event.dx * k, r[1] - event.dy * k]);
+            svg.selectAll("path").attr("d", path);
+        }
+
+        function dragended(event) {
+            if (!rotating) {
+                spinning = setInterval(spin, 100);
+                rotating = true;
+            }
+        }
     </script>
 </body>
 

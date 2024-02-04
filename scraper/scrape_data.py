@@ -1,31 +1,30 @@
 ## Libraries
 # Flask
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 # Scraping
 import requests, tldextract, json, time, random
 from bs4 import BeautifulSoup
 from csv import writer
+# Globe
+import geopandas as gpd
 
-
-# Specify User Agent to mitigate bot-blocking
-headers = {
-    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3538.102 Safari/537.36 Edge/18.19582"
-}
 
 ## BeautifulSoup web scraper
-def scrape_data():
+def scrape_data(keywords, headers, iteration):
+    # Specify User Agent to mitigate bot-blocking
+    print(headers)
+
     # Proxy rotation (random)
     start0 = time.time()
     proxies = open("sup-file/proxies.txt", "r").read().strip().split("\n")
 
-    # Read data from file
-    try:
-        with open('sup-file/keyword.txt', 'r') as file:
-            keywords = file.read()
-            listOfKeywords = [x.strip() for x in keywords.split(',') if x.strip()]
-    except FileNotFoundError:
-        listOfKeywords = []
-    numberOfTimes = 1
+    # Specify keywords
+    listOfKeywords = keywords
+    
+    # Specify number of scrapes
+    print(iteration)
+
+    numberOfTimes = iteration
     resultDict = {}
 
     # Write advertisement elements to csv file
@@ -34,11 +33,7 @@ def scrape_data():
         header = ['URL', 'Company', 'Title', 'Product_Description']
         thewriter.writerow(header)
 
-        for keyword in listOfKeywords:
-            # Isolate keyword from quotes
-            keyword = keyword.replace('"', '')
-            print(keyword)
-            
+        for keyword in listOfKeywords:          
             # To find reoccurent companies
             companyList = []
             numOfAds = 0
@@ -140,13 +135,41 @@ def scrape_data():
     return resultDict
 
 
+## Real-time Globe
+# Load in shapefile or GeoJSON file
+def load_globe():
+    world_polygon = gpd.read_file("sup-file/ne_110m_admin_0_countries.geojson")
+
+    # Extract data
+    dat = world_polygon
+    # .. Add URL locations
+
+    world_polygon.to_file("static/country_updated.geojson", driver='GeoJSON')
+
+
 ## Flask
 scrape_data_bp = Blueprint('scrape_data', __name__)
 
 @scrape_data_bp.route('/webscrape', methods=['GET', 'POST'])
 def webscrape():
+    # Select keywords
+    keywords = request.form.get('serialized_keywords')
+    keywords = keywords.split(',') if keywords else ''
+    print(keywords)
+
+    # Select user agents
+    user_agent = request.form['user_agent']
+    headers = {'User-Agent': user_agent}
+    
+    # Select iterations
+    iteration = request.form.get('iteration', 1)
+    iteration = int(iteration)
+
+    # Call the load globe function
+    load_globe()
+
     # Call the scrape_data function to get the scraped data
-    resultDict = scrape_data()
+    resultDict = scrape_data(keywords, headers, iteration)
 
     # Pass to template
     return render_template('index.html', scraped_data=resultDict)
