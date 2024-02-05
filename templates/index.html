@@ -594,6 +594,47 @@
 
     <!-- Globe -->
     <script>
+        // Websocket
+        // const ws = new WebSocket('ws://localhost:8080');
+
+        // ws.addEventListener('open', function(event) {
+        //     ws.send('Worked');
+        // });
+
+        // ws.onmessage = function(event) {
+        //     const data = event.data;
+        //     if (data && data.includes(',')) { // Basic check to ensure data includes a comma
+        //         const parts = data.split(',');
+        //         const cityCountry = parts[0].trim();
+        //         try {
+        //         const coordinates = JSON.parse(parts[1].trim());
+        //         // Use cityCountry and coordinates as needed
+        //         } catch (e) {
+        //         console.error('Error parsing coordinates:', e);
+        //         }
+        //     } else {
+        //         console.error('Unexpected data format:', data);
+        //     }
+        // };
+
+        // Fetch CSV
+        let cityData = [];
+        fetch('/data')
+            .then(response => response.json())
+            .then(data => {
+                // Map the fetched data to create cityData
+                cityData = data.map(entry => ({
+                    Company: entry.Company,
+                    CityCountry: entry.CityCountry,
+                    Coordinates: entry.Coordinates.replace(/[\[\]\"']/g, '').split(',').map(coord => parseFloat(coord.trim())),
+                }));
+
+                console.log(data);
+                console.log(cityData);
+            })
+            .catch(error => console.error("Error fetching data:", error));
+
+        // Globe
         const width = 960, height = 500;
         const svg = d3.select("#globe");
         const projection = d3.geoOrthographic()
@@ -636,13 +677,13 @@
         //     .attr("stroke-width", 0.5);
 
         // City data - to be updated
-        const cityData = [
-            {
-                cityName: "Los Angeles",
-                coordinates: [-118.243683, 34.052235],
-            },
-            // Add more cities as needed
-        ];
+        // const cityData = [
+        //     {
+        //         cityCountry: "Los Angeles",
+        //         coordinates: [-118.243683, 34.052235],
+        //     },
+        //     // Add more cities as needed
+        // ];
 
         function isVisible(coordinates) {
             // Convert the coordinates to radians
@@ -679,23 +720,23 @@
                 .attr('dy', '0.35em')
                 .attr('fill', 'white')
                 .style('font-size', '10px')
-                .text(d => d.cityName);
+                .text(d => d.CityCountry);
 
             // Update function for the position of cities
             function update() {
                 cityGroups.attr('transform', d => {
-                    const coord = projection(d.coordinates);
+                    const coord = projection(d.Coordinates);
                     return coord ? `translate(${coord})` : 'translate(-100,-100)';
                 })
                 .style('display', d => {
                     // Call visibility check function
-                    const visible = isVisible(d.coordinates);
+                    const visible = isVisible(d.Coordinates);
                     return visible ? null : 'none';
                 });
 
                 cityGroups.select('text')
                         .attr('y', d => {
-                            const coord = projection(d.coordinates);
+                            const coord = projection(d.Coordinates);
                             return coord ? -10 : -100;
                         });
             }

@@ -5,15 +5,15 @@ from flask import Blueprint, render_template, request
 import requests, tldextract, json, time, random
 from bs4 import BeautifulSoup
 from csv import writer
-# Selenium
-from selenium import webdriver
-from urllib.parse import urlencode
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
 # Globe
 import geopandas as gpd
+# Locality
+import pandas as pd
+from geopy.geocoders import Nominatim
+
+
+## Initialize Nominatim API
+geolocator = Nominatim(user_agent="MyApp")
 
 
 ## BeautifulSoup web scraper
@@ -35,24 +35,21 @@ def scrape_data(keywords, headers, iteration):
 
     numberOfTimes = iteration
     resultDict = {}
-
-    # Chrome webdriver
-    service = Service('static/chromedriver.exe')
-
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--ignore-ssl-errors=yes')
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument('--incognito')
-    chrome_options.add_argument(f'--proxy-server={random_proxy}')
-
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
+    locality, locality2 = '', ''
 
     # Write headers
-    with open("static/url_locations.csv", "w", encoding='utf-8', newline='') as file:
+    with open("static/company_locality.csv", "w", encoding='utf-8', newline='') as file:
         thewriter = writer(file)
-        header = ['City', 'Country', 'Coordinates']
+        header = ['Company', 'CityCountry', 'Coordinates']
         thewriter.writerow(header)
+
+    # Read companies_sorted
+    start1 = time.time()
+    companies_df = pd.read_csv('static/companies_sorted.csv')
+
+    # Get total response time
+    totResponseTime1 = time.time() - start1
+    print("Total csv read time: " + str(totResponseTime1) + " seconds.")
 
     # Write advertisement elements to csv file
     with open("scrape-file/scraped_google_urls.csv", "w", encoding='utf-8', newline='') as file:
@@ -72,7 +69,6 @@ def scrape_data(keywords, headers, iteration):
                 for _ in range(numberOfTimes):
                     # Get requests from google search query
                     payload = {'q': keyword}
-                    encoded_params = urlencode(payload)
                     start = time.time()
                     html = requests.get("https://www.google.com/search?q=", params=payload, headers=headers, proxies = {"http": f"http://{random_proxy}"})
                     
@@ -127,20 +123,23 @@ def scrape_data(keywords, headers, iteration):
                                 except:
                                     productDesciption = 'N/A'
 
-                                try:
-                                    country = container.find('div', class_='xXhkSd').text
-                                except:
-                                    country = 'N/A'
+                                # Company locality extraction
+                                match = companies_df[companies_df['name'] == company]
+                                if not match.empty:
+                                    locality = match['locality'].iloc[0]
 
-                                # url location extraction
-                                # city_name = "Los Angeles"
-                                # country_name = "United States"
-                                # coordinates = [40.7128, -74.0060]
-                                # locationElements = [city_name, country_name, coordinates]
+                                    # Remove state/province
+                                    parts = locality.split(", ")
+                                    locality2 = ", ".join([parts[0], parts[-1]])
 
-                                # with open("static/url_locations.csv", "a", encoding='utf-8', newline='') as addfile:
-                                #     thewriter2 = writer(addfile)
-                                #     thewriter2.writerow(locationElements)
+                                # Coordinates from city, country
+                                coordinates = geolocator.geocode(locality)
+                                coordinates_str = "[{}, {}]".format(coordinates.longitude, coordinates.latitude)
+                                locationElements = [company, locality2, coordinates_str]
+
+                                with open("static/company_locality.csv", "a", encoding='utf-8', newline='') as addfile:
+                                    thewriter2 = writer(addfile)
+                                    thewriter2.writerow(locationElements)
 
                                 # Modify url - check http, www
                                 # if not url.startswith(('http://', 'https://')):
@@ -155,27 +154,10 @@ def scrape_data(keywords, headers, iteration):
                                 #     rest_of_url = '.'.join(subdomains)
 
                                 # url2 = protocol + '://' + rest_of_url
-                                    
-                                full_url = f"https://www.google.com/search?{encoded_params}"
-                                
-                                # Go to webpage
-                                driver.get(full_url)
-                                
-                                # Wait for the SVG element with the three dots to be clickable
-                                wait = WebDriverWait(driver, 1)
-                                menu_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'span.DP741d.z1asCe.SaPW2b')))
-                                
-                                # Click the span element to reveal the content
-                                menu_button.click()
-
-                                content = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, 'div.xZhkSd')))
-
-                                # Extract the text
-                                country = content.text
-                                print(country)
 
                                 print(url)
-                                print(country)
+                                print(locality)
+                                print(coordinates.longitude, coordinates.latitude)
                                 print(company)
                                 print(advertisementTitle)
                                 print(productDesciption)
@@ -204,9 +186,6 @@ def scrape_data(keywords, headers, iteration):
     # Get total response time
     totResponseTime = time.time() - start0
     print("Total request response time: " + str(totResponseTime) + " seconds.")
-
-    # Quit
-    driver.quit()
 
     return resultDict
 
