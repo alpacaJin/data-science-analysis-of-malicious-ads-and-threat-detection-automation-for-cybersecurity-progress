@@ -10,11 +10,22 @@ import geopandas as gpd
 # Locality
 import pandas as pd
 from geopy.geocoders import Nominatim
+# Logging
+import firebase_admin
+from firebase_admin import credentials, db
+from datetime import datetime
 
+# Initialize Firebase
+cred = credentials.Certificate('key.json')
+default_app = firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://careless-8a683-default-rtdb.firebaseio.com/'
+})
+
+timestamp = datetime.now().strftime("%H%M%S")
+ref = db.reference(f"/{timestamp}")
 
 ## Initialize Nominatim API
 geolocator = Nominatim(user_agent="MyApp")
-
 
 ## BeautifulSoup web scraper
 def scrape_data(keywords, headers, iteration):
@@ -129,17 +140,29 @@ def scrape_data(keywords, headers, iteration):
                                     locality = match['locality'].iloc[0]
 
                                     # Remove state/province
-                                    parts = locality.split(", ")
-                                    locality2 = ", ".join([parts[0], parts[-1]])
+                                    # parts = locality.split(", ")
+                                    # locality2 = ", ".join([parts[0], parts[-1]])
 
                                 # Coordinates from city, country
                                 coordinates = geolocator.geocode(locality)
-                                coordinates_str = "[{}, {}]".format(coordinates.longitude, coordinates.latitude)
-                                locationElements = [company, locality2, coordinates_str]
+                                if coordinates:
+                                    coordinates_str = "[{}, {}]".format(coordinates.longitude, coordinates.latitude)
+                                else:
+                                    coordinates_str = "[null, null]"
+                                # locationElements = [company, locality2, coordinates_str]
 
-                                with open("static/company_locality.csv", "a", encoding='utf-8', newline='') as addfile:
-                                    thewriter2 = writer(addfile)
-                                    thewriter2.writerow(locationElements)
+                                locationElements = {
+                                    'company': company,
+                                    'locality': locality,
+                                    'coordinates': coordinates_str
+                                }
+
+                                # Push to database
+                                ref.push(locationElements)
+
+                                # with open("static/company_locality.csv", "a", encoding='utf-8', newline='') as addfile:
+                                #     thewriter2 = writer(addfile)
+                                #     thewriter2.writerow(locationElements)
 
                                 # Modify url - check http, www
                                 # if not url.startswith(('http://', 'https://')):
