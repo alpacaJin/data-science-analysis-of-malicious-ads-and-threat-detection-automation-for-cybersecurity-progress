@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify
 from scraper.scrape_data import scrape_data_bp
 from predict.predict_data import predict_data_bp
 import os, csv
-import time, pandas as pd
+import pandas as pd
 
 # Initialize Flask app
 app = Flask(__name__)

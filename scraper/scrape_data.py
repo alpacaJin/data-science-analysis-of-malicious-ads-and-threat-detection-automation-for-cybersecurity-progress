@@ -14,6 +14,7 @@ from geopy.geocoders import Nominatim
 import firebase_admin
 from firebase_admin import credentials, db
 from datetime import datetime
+import ast
 
 # Initialize Firebase
 cred = credentials.Certificate('key.json')
@@ -21,14 +22,11 @@ default_app = firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://careless-8a683-default-rtdb.firebaseio.com/'
 })
 
-timestamp = datetime.now().strftime("%H%M%S")
-ref = db.reference(f"/{timestamp}")
-
 ## Initialize Nominatim API
 geolocator = Nominatim(user_agent="MyApp")
 
 ## BeautifulSoup web scraper
-def scrape_data(keywords, headers, iteration):
+def scrape_data(keywords, headers, iteration, ref, companies_df):
     # Specify User Agent to mitigate bot-blocking
     print(headers)
 
@@ -53,14 +51,6 @@ def scrape_data(keywords, headers, iteration):
         thewriter = writer(file)
         header = ['Company', 'CityCountry', 'Coordinates']
         thewriter.writerow(header)
-
-    # Read companies_sorted
-    start1 = time.time()
-    companies_df = pd.read_csv('static/companies_sorted.csv')
-
-    # Get total response time
-    totResponseTime1 = time.time() - start1
-    print("Total csv read time: " + str(totResponseTime1) + " seconds.")
 
     # Write advertisement elements to csv file
     with open("scrape-file/scraped_google_urls.csv", "w", encoding='utf-8', newline='') as file:
@@ -146,15 +136,14 @@ def scrape_data(keywords, headers, iteration):
                                 # Coordinates from city, country
                                 coordinates = geolocator.geocode(locality)
                                 if coordinates:
-                                    coordinates_str = "[{}, {}]".format(coordinates.longitude, coordinates.latitude)
+                                    coordinates_arr = "[{}, {}]".format(coordinates.longitude, coordinates.latitude)
+                                    coordinates_arr = json.loads(coordinates_arr)
                                 else:
-                                    coordinates_str = "[null, null]"
-                                # locationElements = [company, locality2, coordinates_str]
+                                    coordinates_arr = "[null, null]"
 
                                 locationElements = {
-                                    'company': company,
                                     'locality': locality,
-                                    'coordinates': coordinates_str
+                                    'coordinates': coordinates_arr
                                 }
 
                                 # Push to database
@@ -180,7 +169,6 @@ def scrape_data(keywords, headers, iteration):
 
                                 print(url)
                                 print(locality)
-                                print(coordinates.longitude, coordinates.latitude)
                                 print(company)
                                 print(advertisementTitle)
                                 print(productDesciption)
@@ -242,8 +230,18 @@ def webscrape():
     # Call the load globe function
     load_globe()
 
+    # Db row
+    ref = db.reference(f"/entries")
+
+    # Grab companies_df ~8 sec
+    start1 = time.time()
+    companies_df = pd.read_pickle("static/companies_df.pkl")
+    # Get total response time
+    totResponseTime = time.time() - start1
+    print("Total request response time: " + str(totResponseTime) + " seconds.")
+
     # Call the scrape_data function to get the scraped data
-    resultDict = scrape_data(keywords, headers, iteration)
+    resultDict = scrape_data(keywords, headers, iteration, ref, companies_df)
 
     # Pass to template
     return render_template('index.html', scraped_data=resultDict)
