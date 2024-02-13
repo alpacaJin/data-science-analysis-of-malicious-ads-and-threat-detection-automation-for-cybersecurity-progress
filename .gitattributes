@@ -1,2 +1,2 @@
 models/*.pkl filter=lfs diff=lfs merge=lfs -text
-static/companies_sorted.csv filter=lfs diff=lfs merge=lfs -text
+static/*.pkl filter=lfs diff=lfs merge=lfs -text
